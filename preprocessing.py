@@ -36,7 +36,7 @@ def preprocess_audio(file_path, num_mfcc=40, n_mels=128):
     chroma = np.mean(librosa.feature.chroma_stft(y=audio, sr=sr), axis=1)
     mel_spec = np.mean(librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=n_mels), axis=1)
     
-    
+
     features = np.concatenate([mfccs, mfccs_deltas, [spectral_centroid], chroma, mel_spec])
     
     return features

@@ -4,3 +4,4 @@ scipy
 tensorflow
 streamlit
 matplotlib
+imageio-ffmpeg

@@ -5,3 +5,4 @@ tensorflow
 streamlit
 matplotlib
 imageio-ffmpeg
+reasmpy

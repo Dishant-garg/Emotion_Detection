@@ -7,3 +7,4 @@ matplotlib
 imageio-ffmpeg
 resampy
 soundfile
+ffmpeg-python

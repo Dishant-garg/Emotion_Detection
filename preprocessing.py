@@ -23,22 +23,48 @@ def remove_silence(audio, sr, frame_length=2048):
 
 def load_audio_robust(file_path):
     """Load audio with multiple fallback methods to handle different formats"""
+    import os
+    
+    # First verify the file exists and is accessible
+    if not os.path.exists(file_path):
+        raise Exception(f"File does not exist: {file_path}")
+    
+    if os.path.getsize(file_path) == 0:
+        raise Exception(f"File is empty: {file_path}")
+    
     try:
         # First try soundfile (it's faster and doesn't trigger warnings)
         import soundfile as sf
-        audio, sr = sf.read(file_path)
-        if audio.ndim > 1:  # Convert stereo to mono by averaging channels
-            audio = audio.mean(axis=1)
-        return audio, sr
-    except Exception:
+        try:
+            audio, sr = sf.read(file_path)
+            if audio.ndim > 1:  # Convert stereo to mono by averaging channels
+                audio = audio.mean(axis=1)
+            return audio, sr
+        except Exception as sf_error:
+            # More detailed error from soundfile
+            print(f"SoundFile error: {str(sf_error)}")
+            raise
+    except Exception as sf_exception:
         # Fall back to librosa with warnings suppressed
+        print(f"Falling back to librosa after SoundFile failed: {str(sf_exception)}")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             try:
-                audio, sr = librosa.load(file_path, sr=None)
-                return audio, sr
-            except Exception as e:
-                raise Exception(f"Could not load audio file {file_path}: {str(e)}")
+                # Try different options with librosa
+                try:
+                    # Try with default settings
+                    audio, sr = librosa.load(file_path, sr=None)
+                    return audio, sr
+                except:
+                    # Try with different res_type
+                    audio, sr = librosa.load(file_path, sr=None, res_type='kaiser_best')
+                    return audio, sr
+            except Exception as lib_error:
+                # Final detailed error
+                raise Exception(f"Could not load audio file {file_path}. "
+                               f"SoundFile error: {str(sf_exception)}. "
+                               f"Librosa error: {str(lib_error)}. "
+                               f"File size: {os.path.getsize(file_path)} bytes.")
 
 def preprocess_audio(file_path, num_mfcc=40, n_mels=128):
     # Use the robust loading function instead

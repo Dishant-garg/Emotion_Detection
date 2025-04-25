@@ -64,11 +64,17 @@ if uploaded_file is not None:
             status_text.text(f"Processing: {i+1}%")
             time.sleep(0.01)
 
-        # Create a temporary file with a proper extension
+            # In app.py where you create and write to the temp file:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
             temp_path = temp_file.name
             # Save uploaded file temporarily
             temp_file.write(uploaded_file.getbuffer())
+            # Make sure data is written to disk
+            temp_file.flush()
+            os.fsync(temp_file.fileno())
+
+        # Add a small delay to ensure file is completely saved
+        time.sleep(0.1)
         
         try:
             # Predict emotion

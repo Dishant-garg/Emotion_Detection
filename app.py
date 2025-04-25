@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+st.write("ACCEPT_EULA after deploy:", os.environ.get("ACCEPT_EULA"))
 import time
 from preprocessing import predict_emotion
 from modelutils import load_model

@@ -6,3 +6,4 @@ streamlit
 matplotlib
 imageio-ffmpeg
 resampy
+soundfile

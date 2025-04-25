@@ -8,6 +8,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 import tempfile
+import soundfile as sf  # Add explicit soundfile dependency
 
 # Set page configuration
 st.set_page_config(page_title="Audio Emotion Detector", layout="wide")
@@ -18,6 +19,25 @@ def get_model():
     return load_model()
 
 model = get_model()
+
+# Helper function for robust audio loading
+def load_audio(file_path):
+    """Load audio with better error handling and multiple fallback methods"""
+    try:
+        # First try soundfile (it's faster)
+        import soundfile as sf
+        audio, sr = sf.read(file_path)
+        if audio.ndim > 1:
+            audio = audio.mean(axis=1)  # Convert stereo to mono
+        return audio, sr
+    except Exception as sf_error:
+        st.warning(f"SoundFile loading failed, trying librosa: {sf_error}")
+        try:
+            # Fall back to librosa
+            audio, sr = librosa.load(file_path, sr=None, mono=True)
+            return audio, sr
+        except Exception as e:
+            raise Exception(f"Could not load audio: {e}")
 
 # Title and description
 st.title("🎭 Audio Emotion Detector")
@@ -63,7 +83,8 @@ if uploaded_file is not None:
             
             # Load audio data
             try:
-                y, sr = librosa.load(temp_path, sr=None)
+                # Use our robust loading function
+                y, sr = load_audio(temp_path)
                 
                 # Waveform
                 librosa.display.waveshow(y, sr=sr, ax=ax1)
